@@ -23,12 +23,15 @@
 
 ---
 
-## 📸 Live Mission Control Cockpit & Codelab Screenshots
+## 📸 Live Mission Control Cockpit & QNX 8.0 Execution Gallery
 
-| 1. Live Mission Control Cockpit | 2. Chaos Injection & Oscilloscope Trace | 3. Interactive Developer Codelab |
-| :---: | :---: | :---: |
-| [![Cockpit Dashboard](docs/images/cockpit_dashboard.png)](docs/images/cockpit_dashboard.png) | [![Chaos Injection](docs/images/chaos_injection_test.png)](docs/images/chaos_injection_test.png) | [![Codelab Tutorial](docs/images/codelab_tutorial.png)](docs/images/codelab_tutorial.png) |
-| *Real-Time Telemetry & Simplex CBF Clamping ($1.39\ \mu\text{s}$)* | *100% CPU Storm & Sub-500µs SIGSEGV Self-Healing* | *6-Module Interactive Developer Guide (`/codelab.html`)* |
+| 1. Mission Control Cockpit (Live Telemetry) | 2. Simplex CBF Clamping (< 1.5 µs) |
+| :---: | :---: |
+| [![Live Cockpit](docs/images/01_cockpit_telemetry_live.png)](docs/images/01_cockpit_telemetry_live.png)<br>*(1) 20Hz Real-Time Telemetry, Kinematics Radar, and 2.50m Safe Envelope* | [![CBF Clamping](docs/images/02_cbf_simplex_clamping.png)](docs/images/02_cbf_simplex_clamping.png)<br>*(2) Unsafe AI Vector ($R=8.5\text{m}$) Clamped at Tangent Cone in $1.39\ \mu\text{s}$* |
+| **3. 100% CPU Storm & Oscilloscope Trace** | **4. Fatal SIGSEGV & Watchdog Self-Healing** |
+| [![CPU Storm Jitter](docs/images/03_cpu_storm_jitter_oscilloscope.png)](docs/images/03_cpu_storm_jitter_oscilloscope.png)<br>*(3) Priority 63 SCHED_FIFO Zero-Jitter Flatline (< 3.5 µs) Under CPU Storm* | [![Watchdog Self-Healing](docs/images/04_watchdog_sigsegv_self_healing.png)](docs/images/04_watchdog_sigsegv_self_healing.png)<br>*(4) Priority 62 Watchdog Revives AI via `posix_spawn()` in $< 450\ \mu\text{s}$* |
+| **5. 6-Module Interactive Developer Codelab** | **6. QNX 8.0 QEMU Virtual Target Execution** |
+| [![Developer Codelab](docs/images/05_developer_codelab_interactive.png)](docs/images/05_developer_codelab_interactive.png)<br>*(5) Complete Hands-On Developer Tutorial at `/codelab.html`* | [![QNX Terminal Execution](docs/images/06_qnx80_terminal_qemu_execution.png)](docs/images/06_qnx80_terminal_qemu_execution.png)<br>*(6) QEMU Multiboot, QNX 8.0 Microkernel Boot Log, and Native Drivers* |
 
 ---
 
