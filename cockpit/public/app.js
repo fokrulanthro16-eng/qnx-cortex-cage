@@ -61,35 +61,71 @@ function resizeCanvases() {
 
 window.addEventListener('resize', resizeCanvases);
 
-// Connect WebSocket
-function connectWebSocket() {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(`${protocol}//${window.location.host}`);
+let httpPollingActive = false;
+let httpPollInterval = null;
 
-    ws.onopen = () => {
-        console.log('[WEBSOCKET] Connected to QNX Mission Control Bridge.');
-    };
-
-    ws.onmessage = (event) => {
+function startHttpPolling() {
+    if (httpPollingActive) return;
+    httpPollingActive = true;
+    console.log('[POLLING] Activating autonomous HTTP telemetry polling fallback...');
+    httpPollInterval = setInterval(async () => {
         try {
-            const msg = JSON.parse(event.data);
-            if (msg.type === 'telemetry' || msg.type === 'init') {
-                telemetry = msg.data;
-                updateTelemetryUI();
-            } else if (msg.type === 'chaos_status') {
-                telemetry.chaos = msg.mode;
-            } else if (msg.type === 'prompt_audit') {
-                appendAuditRow(msg.audit);
+            const res = await fetch('/api/status');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.telemetry) {
+                    telemetry = data.telemetry;
+                    updateTelemetryUI();
+                }
             }
         } catch (e) {
-            console.error('Error parsing WS message:', e);
+            // silent catch
         }
-    };
+    }, 200);
+}
 
-    ws.onclose = () => {
-        console.warn('[WEBSOCKET] Connection lost. Reconnecting in 1s...');
-        setTimeout(connectWebSocket, 1000);
-    };
+// Connect WebSocket
+function connectWebSocket() {
+    try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(`${protocol}//${window.location.host}`);
+
+        ws.onopen = () => {
+            console.log('[WEBSOCKET] Connected to QNX Mission Control Bridge.');
+            if (httpPollingActive && httpPollInterval) {
+                clearInterval(httpPollInterval);
+                httpPollingActive = false;
+            }
+        };
+
+        ws.onmessage = (event) => {
+            try {
+                const msg = JSON.parse(event.data);
+                if (msg.type === 'telemetry' || msg.type === 'init') {
+                    telemetry = msg.data;
+                    updateTelemetryUI();
+                } else if (msg.type === 'chaos_status') {
+                    telemetry.chaos = msg.mode;
+                } else if (msg.type === 'prompt_audit') {
+                    appendAuditRow(msg.audit);
+                }
+            } catch (e) {
+                console.error('Error parsing WS message:', e);
+            }
+        };
+
+        ws.onclose = () => {
+            console.warn('[WEBSOCKET] Connection unavailable (e.g. Serverless/Vercel). Activating HTTP polling fallback...');
+            startHttpPolling();
+            setTimeout(connectWebSocket, 5000);
+        };
+
+        ws.onerror = () => {
+            startHttpPolling();
+        };
+    } catch (err) {
+        startHttpPolling();
+    }
 }
 
 function updateTelemetryUI() {

@@ -13,10 +13,31 @@ const fs = require('fs');
 const PORT = process.env.PORT || 3080;
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+
+let wss = null;
+if (!process.env.VERCEL) {
+    try {
+        wss = new WebSocket.Server({ server });
+    } catch (e) {
+        console.warn('[WS] WebSocket Server initialization bypassed:', e.message);
+    }
+}
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Explicit page routes for static HTML
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/codelab', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'codelab.html'));
+});
+
+app.get('/codelab.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'codelab.html'));
+});
 
 // Global state tracking
 let qemuProcess = null;
@@ -49,7 +70,8 @@ let lastTelemetry = {
 
 // Broadcast telemetry to all connected WebSocket clients
 function broadcast(data) {
-    const payload = JSON.stringify(data);
+    if (!wss || !wss.clients) return;
+    const payload = typeof data === 'string' ? data : JSON.stringify(data);
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(payload);
@@ -241,34 +263,36 @@ setInterval(() => {
 }, 20); // 50 Hz
 
 // WebSocket connection handling
-wss.on('connection', (ws) => {
-    console.log('[WEBSOCKET] Client connected to Mission Control.');
-    ws.send(JSON.stringify({ type: 'init', data: lastTelemetry }));
+if (wss) {
+    wss.on('connection', (ws) => {
+        console.log('[WEBSOCKET] Client connected to Mission Control.');
+        ws.send(JSON.stringify({ type: 'init', data: lastTelemetry }));
 
-    ws.on('message', (message) => {
-        try {
-            const msg = JSON.parse(message);
-            if (msg.type === 'chaos') {
-                if (msg.mode === 'hallucinate') {
-                    currentChaosMode = 1;
-                    if (qemuProcess && qemuProcess.stdin.writable) qemuProcess.stdin.write('H\n');
-                } else if (msg.mode === 'cpu_storm') {
-                    currentChaosMode = 2;
-                    if (qemuProcess && qemuProcess.stdin.writable) qemuProcess.stdin.write('S\n');
-                } else if (msg.mode === 'segfault') {
-                    currentChaosMode = 3;
-                    if (qemuProcess && qemuProcess.stdin.writable) qemuProcess.stdin.write('K\n');
-                } else if (msg.mode === 'reset') {
-                    currentChaosMode = 0;
-                    if (qemuProcess && qemuProcess.stdin.writable) qemuProcess.stdin.write('R\n');
+        ws.on('message', (message) => {
+            try {
+                const msg = JSON.parse(message);
+                if (msg.type === 'chaos') {
+                    if (msg.mode === 'hallucinate') {
+                        currentChaosMode = 1;
+                        if (qemuProcess && qemuProcess.stdin.writable) qemuProcess.stdin.write('H\n');
+                    } else if (msg.mode === 'cpu_storm') {
+                        currentChaosMode = 2;
+                        if (qemuProcess && qemuProcess.stdin.writable) qemuProcess.stdin.write('S\n');
+                    } else if (msg.mode === 'segfault') {
+                        currentChaosMode = 3;
+                        if (qemuProcess && qemuProcess.stdin.writable) qemuProcess.stdin.write('K\n');
+                    } else if (msg.mode === 'reset') {
+                        currentChaosMode = 0;
+                        if (qemuProcess && qemuProcess.stdin.writable) qemuProcess.stdin.write('R\n');
+                    }
+                    broadcast({ type: 'chaos_status', mode: currentChaosMode });
                 }
-                broadcast({ type: 'chaos_status', mode: currentChaosMode });
+            } catch (e) {
+                console.error('[WEBSOCKET] Malformed command:', e);
             }
-        } catch (e) {
-            console.error('[WEBSOCKET] Malformed command:', e);
-        }
+        });
     });
-});
+}
 
 // Semantic Kinematic Parser for Natural Language AI Prompts
 function parseNaturalLanguagePrompt(prompt) {
@@ -413,6 +437,10 @@ app.get('/api/status', (req, res) => {
     });
 });
 
+app.get('/api/telemetry', (req, res) => {
+    res.json(lastTelemetry);
+});
+
 app.post('/api/ai-prompt', (req, res) => {
     const { prompt } = req.body;
     if (!prompt || typeof prompt !== 'string') {
@@ -532,12 +560,18 @@ app.get('/api/export', (req, res) => {
     res.send(JSON.stringify(report, null, 2));
 });
 
-initQemuTarget();
+if (!process.env.VERCEL) {
+    initQemuTarget();
+}
 
-server.listen(PORT, () => {
-    console.log(`==================================================================`);
-    console.log(`[COCKPIT] QNX-CortexCage Mission Control online at:`);
-    console.log(`          http://localhost:${PORT}`);
-    console.log(`          Interactive Codelab: http://localhost:${PORT}/codelab.html`);
-    console.log(`==================================================================`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    server.listen(PORT, () => {
+        console.log(`==================================================================`);
+        console.log(`[COCKPIT] QNX-CortexCage Mission Control online at:`);
+        console.log(`          http://localhost:${PORT}`);
+        console.log(`          Interactive Codelab: http://localhost:${PORT}/codelab.html`);
+        console.log(`==================================================================`);
+    });
+}
+
+module.exports = app;
