@@ -50,7 +50,7 @@ When deployed on physical actuators:
 ---
 
 ### 4. Official Keynote Video & Verification Evidence
+- **Live Mission Control Cockpit (Vercel):** [https://qnx-cortex-cage.vercel.app](https://qnx-cortex-cage.vercel.app)
+- **Interactive Developer Codelab (Vercel):** [https://qnx-cortex-cage.vercel.app/codelab.html](https://qnx-cortex-cage.vercel.app/codelab.html)
 - **Master Keynote Video:** [`QNX_CortexCage_Official_Demo.mp4`](file:///C:/Users/WALTON/qnx_workspace/qnx-cortex-cage/QNX_CortexCage_Official_Demo.mp4) (1080p 60FPS with Microsoft Neural Voiceover, Silicon Valley Keynote HUD, and live browser recording across all 6 choreographed scenes).
 - **GitHub Repository:** [https://github.com/fokrulanthro16-eng/qnx-cortex-cage.git](https://github.com/fokrulanthro16-eng/qnx-cortex-cage.git)
-- **Interactive Developer Codelab:** [`cockpit/public/codelab.html`](file:///C:/Users/WALTON/qnx_workspace/qnx-cortex-cage/cockpit/public/codelab.html)
-- **Live Mission Control Cockpit:** [`cockpit/public/index.html`](file:///C:/Users/WALTON/qnx_workspace/qnx-cortex-cage/cockpit/public/index.html)

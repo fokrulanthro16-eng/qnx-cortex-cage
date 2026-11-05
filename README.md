@@ -1,6 +1,8 @@
 # 🛡️ QNX-Cortex-Cage: Next-Gen Real-Time AI Safety & Isolation Sandbox
 ### Microkernel-Enforced Deterministic Simplex Safety Architecture for Physical AI
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20Active-brightgreen.svg?logo=vercel)](https://qnx-cortex-cage.vercel.app)
+[![Interactive Codelab](https://img.shields.io/badge/Codelab-Live%20Tutorial-blue.svg)](https://qnx-cortex-cage.vercel.app/codelab.html)
 [![QNX SDP 8.0](https://img.shields.io/badge/QNX_SDP-8.0.0_Neutrino-006699.svg)](https://blackberry.qnx.com/)
 [![Architectures](https://img.shields.io/badge/Architectures-x86__64_|_AArch64-10B981.svg)](https://blackberry.qnx.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -10,8 +12,11 @@
 [![Jitter](https://img.shields.io/badge/Wakeup_Jitter-<3.5µs_Flatline-38BDF8.svg)]()
 
 > **QNX-Cortex-Cage** is a cutting-edge real-time safety framework that provides microkernel-level spatial and temporal isolation, sub-microsecond Control Barrier Function (CBF) trajectory clamping, and a self-healing embedded AI execution sandbox on **QNX Neutrino RTOS SDP 8.0**.
->
-> **Repository:** [https://github.com/fokrulanthro16-eng/qnx-cortex-cage.git](https://github.com/fokrulanthro16-eng/qnx-cortex-cage.git)
+
+> ### 🌐 Quick Access & Live Deployments
+> - **Mission Control Cockpit (Live Web):** [https://qnx-cortex-cage.vercel.app](https://qnx-cortex-cage.vercel.app)
+> - **6-Module QNX Developer Codelab:** [https://qnx-cortex-cage.vercel.app/codelab.html](https://qnx-cortex-cage.vercel.app/codelab.html)
+> - **GitHub Repository:** [https://github.com/fokrulanthro16-eng/qnx-cortex-cage.git](https://github.com/fokrulanthro16-eng/qnx-cortex-cage.git)
 
 > **Targeted Prize Tracks:**
 > 1. **Grand Prize ($10,000) / Best of Robotics & Medical or Automotive ($4,000)**
