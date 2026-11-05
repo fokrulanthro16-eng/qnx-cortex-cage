@@ -1,4 +1,5 @@
 # 🛡️ QNX-Cortex-Cage: Next-Gen Real-Time AI Safety & Isolation Sandbox
+### Microkernel-Enforced Deterministic Simplex Safety Architecture for Physical AI
 
 [![QNX SDP 8.0](https://img.shields.io/badge/QNX_SDP-8.0.0_Neutrino-006699.svg)](https://blackberry.qnx.com/)
 [![Architectures](https://img.shields.io/badge/Architectures-x86__64_|_AArch64-10B981.svg)](https://blackberry.qnx.com/)
@@ -8,7 +9,8 @@
 [![Safety Priority](https://img.shields.io/badge/Safety_Loop-Priority_63_SCHED__FIFO-EF4444.svg)]()
 [![Jitter](https://img.shields.io/badge/Wakeup_Jitter-<3.5µs_Flatline-38BDF8.svg)]()
 
-> **QNX-Cortex-Cage** holo real-time, deterministic OS (QNX/POSIX) environment-e microkernel-level isolation ebong embedded AI execution sandbox ensure korar akta cutting-edge framework.
+> **QNX-Cortex-Cage** is a cutting-edge real-time safety framework that provides microkernel-level spatial and temporal isolation, sub-microsecond Control Barrier Function (CBF) trajectory clamping, and a self-healing embedded AI execution sandbox on **QNX Neutrino RTOS SDP 8.0**.
+>
 > **Repository:** [https://github.com/fokrulanthro16-eng/qnx-cortex-cage.git](https://github.com/fokrulanthro16-eng/qnx-cortex-cage.git)
 
 > **Targeted Prize Tracks:**
@@ -21,19 +23,29 @@
 
 ---
 
+## 📸 Live Mission Control Cockpit & Codelab Screenshots
+
+| 1. Live Mission Control Cockpit | 2. Chaos Injection & Oscilloscope Trace | 3. Interactive Developer Codelab |
+| :---: | :---: | :---: |
+| [![Cockpit Dashboard](docs/images/cockpit_dashboard.png)](docs/images/cockpit_dashboard.png) | [![Chaos Injection](docs/images/chaos_injection_test.png)](docs/images/chaos_injection_test.png) | [![Codelab Tutorial](docs/images/codelab_tutorial.png)](docs/images/codelab_tutorial.png) |
+| *Real-Time Telemetry & Simplex CBF Clamping ($1.39\ \mu\text{s}$)* | *100% CPU Storm & Sub-500µs SIGSEGV Self-Healing* | *6-Module Interactive Developer Guide (`/codelab.html`)* |
+
+---
+
 ## 1. Executive Summary & Problem Solved
 
-Modern Physical AI models (deep reinforcement learning, end-to-end neural motion policies, vision-language-action foundation models) are inherently non-deterministic. When deployed on physical manipulators, autonomous vehicles, surgical robots, or humanoid actuators, neural policies suffer from **distributional shifts, unmodeled torque spikes, and hallucinations** that can breach physical safety boundaries in milliseconds.
+Modern Physical AI models (deep reinforcement learning, end-to-end neural motion policies, vision-language-action foundation models) are inherently non-deterministic. When deployed on physical manipulators, autonomous vehicles, surgical robots, or humanoid actuators, neural policies suffer from **distributional shifts, unmodeled torque spikes, and prompt-injection hallucinations** that can breach physical safety boundaries in milliseconds.
 
 Standard Linux-based robotics stacks (e.g., ROS 2 / PREEMPT_RT) cannot provide true microkernel spatial and temporal isolation:
-- An AI driver page fault or memory corruption crashes the entire robotics runtime.
-- A compute-heavy thread storm (100% CPU) spikes actuator jitter from microseconds into tens of milliseconds.
+- An AI driver segmentation fault or memory corruption crashes the entire robotics runtime.
+- A compute-heavy thread storm (100% CPU load) spikes actuator jitter from microseconds into tens of milliseconds.
 
-**QNX-CortexCage** solves this by establishing a **Microkernel-Enforced Simplex Architecture** powered by the **QNX Neutrino RTOS SDP 8.0 Microkernel**:
+**QNX-Cortex-Cage** solves this by establishing a **Microkernel-Enforced Simplex Architecture** powered by the **QNX Neutrino RTOS SDP 8.0 Microkernel**:
 1. **Mathematical Control Barrier Function (CBF) Simplex Gate**: Implemented as a native QNX Resource Manager (`/dev/cortex_gate`) evaluating $h(x) = R_{safe}^2 - \|x\|^2 - \alpha(x \cdot v)$ in **$< 1.5$ microseconds**. If an AI vector violates safety, it is instantly clamped to the safe tangent cone.
 2. **Microkernel Security Containment**: The untrusted AI Planner drops root abilities via `procmgr_ability()` and runs strictly throttled under `SCHED_SPORADIC` (Priority 15), guaranteeing it cannot starve hard real-time threads.
 3. **Hard Real-Time 1kHz Safety Actuator Loop**: Locked in memory with `mlockall()` and elevated to **Priority 63 (`SCHED_FIFO`)**, achieving a deterministic **$< 3.5$ microsecond jitter flatline** regardless of CPU load.
 4. **Sub-Millisecond Self-Healing Supervisor**: A Priority 62 High-Availability Watchdog isolates memory faults (`SIGSEGV`) and revives failed AI planners in **$< 450$ microseconds** via `posix_spawn()`.
+5. **Zero Cloud Dependencies / Embedded 3-Layer C MLP**: A self-contained feedforward neural network ($6 \to 16\text{ [tanh]} \to 16\text{ [ReLU]} \to 7$) executing in **$18\ \mu\text{s}$** inside QNX user-space.
 
 ---
 
@@ -85,14 +97,34 @@ Standard Linux-based robotics stacks (e.g., ROS 2 / PREEMPT_RT) cannot provide t
 
 ---
 
-## 3. Evidence of QNX 8.0 Usage (Traceability Matrix)
+## 3. Mathematical Control Barrier Function (CBF) Simplex Gate
+
+The Simplex Gate continuously evaluates a Control Barrier Function $h(x)$ defining the admissible state space $\mathcal{C}$:
+
+$$\mathcal{C} = \{ x \in \mathbb{R}^3 \mid h(x) \ge 0 \}, \quad h(x) = R_{safe}^2 - \|x\|^2 - \alpha (x \cdot v)$$
+
+Where:
+- $R_{safe} = 2.50\text{ m}$ is the hard geometric perimeter of the robot workspace.
+- $\alpha = 0.35\text{ s}$ is the velocity anticipation dampening parameter.
+- $x = [p_x, p_y, p_z]^T$ is the 3D end-effector coordinate vector.
+- $v = [v_x, v_y, v_z]^T$ is the commanded kinematic velocity vector.
+
+When an unverified AI actuation vector violates the barrier certificate ($h(x) < 0$), the native QNX Resource Manager projects the unsafe state onto the tangent cone:
+
+$$x_{clamped} = \frac{x}{\|x\|} \cdot (R_{safe} - \epsilon), \quad \tau_{clamped} = \text{sign}(\tau) \cdot \min(|\tau|, \tau_{max})$$
+
+With maximum torque clamped to $\tau_{max} = 30.0\text{ Nm}$ in **$1.39\ \mu\text{s}$**, provably preventing actuator damage or human injury.
+
+---
+
+## 4. Evidence of QNX 8.0 Usage (Traceability Matrix)
 
 Per the QNX Global Hackathon rules, below is the exact technical traceability proving deep, native integration with QNX Neutrino 8.0 APIs across both **x86_64** and **AArch64**:
 
 | QNX 8.0 Native Technology / API | Exact Source File & Line | Verified ELF Import Symbol | Architectural Purpose in QNX-CortexCage |
 | :--- | :--- | :--- | :--- |
 | **Native Resource Manager** (`resmgr_attach`) | `src/cortex_gate_resmgr.c:342` | `resmgr_attach`, `dispatch_create` | Exposes `/dev/cortex_gate` device node in QNX pathname space to intercept all actuation vectors. |
-| **Microkernel Ability Sandbox** (`procmgr_ability`) | `src/ai_neural_planner.c:64` | `procmgr_ability` | Strips root privileges (`PROCMGR_ADN_NONROOT | PROCMGR_AOP_DENY`) from untrusted AI agent. |
+| **Microkernel Ability Sandbox** (`procmgr_ability`) | `src/ai_neural_planner.c:64` | `procmgr_ability` | Strips root privileges (`PROCMGR_ADN_NONROOT \| PROCMGR_AOP_DENY`) from untrusted AI agent. |
 | **Sporadic Scheduling** (`SCHED_SPORADIC`) | `src/ai_neural_planner.c:84` | `sched_setscheduler` | Enforces budget/replenishment execution limits (15ms budget / 50ms period) to prevent AI CPU storms. |
 | **Highest Priority Thread** (`SCHED_FIFO` Pri 63) | `src/safety_actuator_loop.c:104` | `pthread_setschedparam` | Runs safety loop at highest priority in QNX microkernel, immune to user-space thread contention. |
 | **Deterministic Fixed-Priority Pulse Channel** | `src/safety_actuator_loop.c:126` | `ChannelCreate`, `ConnectAttach` | Creates non-blocking microkernel pulse channel using `_NTO_CHF_FIXED_PRIORITY`. |
@@ -107,7 +139,7 @@ Per the QNX Global Hackathon rules, below is the exact technical traceability pr
 
 ---
 
-## 4. Benchmark & Jitter Results
+## 5. Benchmark & Jitter Results
 
 Testing was conducted under high computational contention (100% CPU Fork Storm injected into AI planner core):
 
@@ -121,7 +153,7 @@ Testing was conducted under high computational contention (100% CPU Fork Storm i
 
 ---
 
-## 5. Step-by-Step Reproduction Guide
+## 6. Step-by-Step Reproduction Guide
 
 ### Prerequisites
 - Host OS: Windows 10/11 (or Linux)
@@ -137,7 +169,13 @@ scripts\run_full_demo.bat
 ```
 *This compiles both architectures, generates the bootable IFS image, launches the Mission Control Cockpit server at `http://localhost:3080`, opens your browser, and boots the QNX target in QEMU.*
 
-### Option B: Manual Step-by-Step Execution
+### Option B: Docker Containerized Build
+```bash
+docker build -t qnx-cortex-cage:latest .
+docker run -it --rm -p 3080:3080 qnx-cortex-cage:latest
+```
+
+### Option C: Manual Step-by-Step Execution
 1. **Initialize QNX 8.0 Environment & Cross-Compile**:
    ```cmd
    call C:\Users\WALTON\qnx800\qnxsdp-env.bat
@@ -161,11 +199,11 @@ scripts\run_full_demo.bat
 
 ---
 
-## 6. Three-Minute YouTube Video Demo Script
+## 7. Three-Minute Video Demo Script
 
 - **[0:00 - 0:35] The Physical AI Safety Dilemma**: Introduce the problem of deep neural network hallucinations causing physical damage in robotics and autonomous vehicles. Explain why Linux fails under CPU contention or memory crashes.
 - **[0:35 - 1:15] QNX 8.0 Microkernel Architecture**: Show the 4-process hierarchy: `/dev/cortex_gate` Resource Manager, `SCHED_SPORADIC` sandboxed AI planner, Priority 63 Safety Loop, and Priority 62 Watchdog.
-- **[1:15 - 1:55] Live Chaos Injection 1 (AI Hallucination & CBF Clamping)**: In the Mission Control Cockpit, click `INJECT AI HALLUCINATION`. Show the red unsafe vector ($R=8.5\text{ m}, \tau=180\text{ Nm}$) being mathematically clamped in $< 1.3\text{ }\mu\text{s}$ to the safe green boundary.
+- **[1:15 - 1:55] Live Chaos Injection 1 (AI Hallucination & CBF Clamping)**: In the Mission Control Cockpit, type or inject an adversarial command. Show the red unsafe vector ($R=8.5\text{ m}, \tau=240\text{ Nm}$) being mathematically clamped in $< 1.4\text{ }\mu\text{s}$ to the safe green boundary.
 - **[1:55 - 2:30] Live Chaos Injection 2 & 3 (CPU Storm & Memory Fault)**:
   - Click `UNLEASH 100% CPU STORM`: Compare the oscilloscope traces—Linux spikes to $800\text{ }\mu\text{s}$, while QNX Priority 63 remains completely flatlined at $< 3.5\text{ }\mu\text{s}$.
   - Click `INJECT FATAL SIGSEGV`: Trigger a hardware page fault in the AI agent. Watch the microkernel isolate the crash, while the High-Availability Watchdog revives the planner in $385\text{ }\mu\text{s}$ with zero actuator glitch.
