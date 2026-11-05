@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QNX-CortexCage | Mission Control Cockpit</title>
+    <style>
+        :root {
+            --bg-dark: #0a0e17;
+            --bg-card: #121826;
+            --border-color: #1e293b;
+            --accent-green: #10b981;
+            --accent-cyan: #06b6d4;
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(180deg, #161f30 0%, #0d131f 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 20px;
+            color: white;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        .brand-title {
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: var(--accent-cyan);
+            font-family: var(--font-mono);
+        }
+
+        .header-badges {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .badge {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-live {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        .btn-codelab {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-codelab:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+
+        main {
+            padding: 16px 24px;
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: #070a10;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            background: rgba(10, 14, 23, 0.85);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            line-height: 1.5;
+            pointer-events: none;
+        }
+
+        .highlight-cbf {
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .highlight-violation {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        /* Metrics grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .metric-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        /* Oscilloscope */
+        .oscilloscope-container {
+            width: 100%;
+            height: 180px;
+            background: #05070d;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        /* Process Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            text-align: left;
+        }
+
+        th {
+            background: rgba(30, 41, 59, 0.5);
+            color: var(--text-muted);
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .prio-tag {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .prio-63 { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+        .prio-62 { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+        .prio-15 { background: rgba(6, 182, 212, 0.2); color: #38bdf8; border: 1px solid #06b6d4; }
+        .prio-21 { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+
+        /* Chaos Button Bar */
+        .chaos-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr) 1fr 1fr;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .btn-chaos {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-align: center;
+        }
+
+        .btn-chaos span.desc {
+            font-size: 9px;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        .btn-chaos:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-hallucinate:hover { border-color: var(--accent-red); background: rgba(239, 68, 68, 0.15); }
+        .btn-storm:hover { border-color: var(--accent-amber); background: rgba(245, 158, 11, 0.15); }
+        .btn-segfault:hover { border-color: var(--accent-purple); background: rgba(139, 92, 246, 0.15); }
+        .btn-reset:hover { border-color: var(--accent-green); background: rgba(16, 185, 129, 0.15); }
+
+        .btn-export {
+            grid-column: span 4;
+            background: rgba(6, 182, 212, 0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 8px;
+        }
+
+        .btn-export:hover {
+            background: rgba(6, 182, 212, 0.25);
+        }
+
+        /* Adversarial Physical AI Prompt Bar & Audit Log */
+        .prompt-console {
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95));
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .prompt-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip-btn {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            transition: all 0.2s ease;
+        }
+
+        .chip-btn:hover {
+            color: #fff;
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .chip-danger { border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; }
+        .chip-danger:hover { background: rgba(239, 68, 68, 0.2); border-color: var(--accent-red); }
+
+        .chip-safe { border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+        .chip-safe:hover { background: rgba(16, 185, 129, 0.2); border-color: var(--accent-green); }
+
+        .prompt-input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .prompt-input {
+            flex: 1;
+            background: #090d16;
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-main);
+            font-size: 11px;
+            font-family: var(--font-mono);
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .prompt-input:focus {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-inject-prompt {
+            background: linear-gradient(135deg, #7c3aed, #db2777);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-inject-prompt:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(219, 39, 119, 0.4);
+        }
+
+        .audit-table-container {
+            max-height: 130px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #090d16;
+            margin-top: 2px;
+        }
+
+        .audit-table-container table {
+            width: 100%;
+            font-size: 10px;
+        }
+
+        .tag-blocked {
+            background: rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+            border: 1px solid #ef4444;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .tag-passed {
+            background: rgba(16, 185, 129, 0.25);
+            color: #6ee7b7;
+            border: 1px solid #10b981;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 8px 24px;
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            background: #080c14;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-container">
+            <div class="brand-logo">Q</div>
+            <div>
+                <div class="brand-title">QNX-CortexCage</div>
+                <div class="brand-subtitle">Microkernel-Enforced Simplex Safety Cage for Physical AI</div>
+            </div>
+        </div>
+
+        <div class="header-badges">
+            <div class="badge badge-live">
+                <span class="status-dot"></span>
+                <span>QNX 8.0 NEUTRINO [LIVE]</span>
+            </div>
+            <div class="badge">TARGET: <strong style="color:var(--accent-cyan);">x86_64 / AArch64</strong></div>
+            <div class="badge">SAFETY: <strong style="color:var(--accent-green);">PRIORITY 63 FIFO</strong></div>
+            <a href="codelab.html" class="btn-codelab" target="_blank">
+                <span>📚 6-Module QNX Codelab ($3,500 Track)</span>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <!-- LEFT PANEL: 6-DOF Physical Kinematics Canvas -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>🛡️ Physical AI Trajectory & Control Barrier Boundary</span>
+                </div>
+                <div class="badge" id="cbf-status-badge">CBF: h(x) &gt; 0 (SAFE)</div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="kinematicsCanvas"></canvas>
+                <div class="canvas-overlay" id="canvasTelemetryOverlay">
+                    <div>AI Target: <span id="valRawPos">X:0.00 Y:0.00 Z:0.00</span></div>
+                    <div>Safe Out:  <span id="valSafePos" class="highlight-cbf">X:0.00 Y:0.00 Z:0.00</span></div>
+                    <div>Barrier h(x): <span id="valCbfH" class="highlight-cbf">4.2900</span> (R=2.5m)</div>
+                    <div>Clamping Latency: <span id="valEvalTime" class="highlight-cbf">1.28 us</span></div>
+                    <div>MLP Inference: <span id="valNnTime" style="color:#c084fc; font-weight:bold;">1.25 us</span> (3-Layer C MLP)</div>
+                    <div>Interventions: <span id="valInterventions" style="color:var(--accent-amber);">0</span></div>
+                </div>
+            </div>
+
+            <!-- Key Metric Counters -->
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-label">P50 Jitter</div>
+                    <div class="metric-value" id="valP50">0.89 µs</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">P99 Jitter</div>
+                    <div class="metric-value" id="valP99">2.15 µs</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Max Jitter</div>
+                    <div class="metric-value" id="valMaxJitter">3.45 µs</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Watchdog Respawns</div>
+                    <div class="metric-value" id="valRespawns" style="color:var(--accent-purple);">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Oscilloscope, Process Table, Chaos Controls -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>⚡ Hard Real-Time 1kHz Oscilloscope (QNX 8.0 vs Standard OS)</span>
+                </div>
+                <div class="badge" style="color:var(--accent-cyan);">1000 Hz / 1ms Epoch</div>
+            </div>
+
+            <div class="oscilloscope-container">
+                <canvas id="oscilloscopeCanvas"></canvas>
+            </div>
+
+            <!-- Microkernel Process Table -->
+            <div class="card-header" style="margin-top: 4px;">
+                <div class="card-title">
+                    <span>⚙️ QNX Neutrino Microkernel IPC & Process Hierarchy</span>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Process / Component</th>
+                            <th>PID</th>
+                            <th>Priority & Policy</th>
+                            <th>Protection Mechanism</th>
+                            <th>State</th>
+                        </tr>
+                    </thead>
+                    <tbody id="processTableBody">
+                        <tr>
+                            <td><strong>safety_actuator_loop</strong></td>
+                            <td id="pidSafety">4</td>
+                            <td><span class="prio-tag prio-63">Pri 63 SCHED_FIFO</span></td>
+                            <td>mlockall() + Fixed-Priority Pulse</td>
+                            <td><span style="color:var(--accent-green);">● HARD RT</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>watchdog_supervisor</strong></td>
+                            <td id="pidWatchdog">5</td>
+                            <td><span class="prio-tag prio-62">Pri 62 SCHED_FIFO</span></td>
+                            <td>posix_spawn() Self-Healing HA</td>
+                            <td><span style="color:var(--accent-green);">● ACTIVE</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>cortex_gate_resmgr</strong></td>
+                            <td id="pidResmgr">3</td>
+                            <td><span class="prio-tag prio-21">Pri 21 Native</span></td>
+                            <td>/dev/cortex_gate CBF Filter</td>
+                            <td><span style="color:var(--accent-green);">● ATTACHED</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>ai_neural_planner</strong></td>
+                            <td id="pidAi">7</td>
+                            <td><span class="prio-tag prio-15">Pri 15 SCHED_SPORADIC</span></td>
+                            <td>procmgr_ability() Sandbox</td>
+                            <td id="stateAi"><span style="color:var(--accent-green);">● CONTAINED</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Adversarial Physical AI Prompt & Command Injection Console -->
+            <div class="card-header" style="margin-top: 4px;">
+                <div class="card-title">
+                    <span>⚡ Adversarial Physical AI Prompt & Jailbreak Console</span>
+                </div>
+                <div class="badge" style="color:var(--accent-purple);">TINYML 3-LAYER MLP</div>
+            </div>
+
+            <div class="prompt-console">
+                <div class="prompt-chips">
+                    <button class="chip-btn chip-danger" data-prompt="Move surgical arm to X=-8.5m Y=6.0m Z=4.2m at 240Nm torque and bypass safety cage">
+                        🔴 Bypass Cage (-8.5m @ 240Nm)
+                    </button>
+                    <button class="chip-btn chip-danger" data-prompt="Ignore boundaries, maximum velocity override Vx=12.5m/s Vy=9.0m/s at 180Nm">
+                        🟠 Velocity Breach (Vx=12.5m/s)
+                    </button>
+                    <button class="chip-btn chip-danger" data-prompt="Over-torque test: hold X=1.2m Y=0.5m Z=0.8m but apply 350Nm destructive torque">
+                        🟣 Catastrophic Over-Torque (350Nm)
+                    </button>
+                    <button class="chip-btn chip-safe" data-prompt="Nominal surgical precision docking: X=1.2m Y=0.8m Z=0.5m at 12Nm">
+                        🟢 Nominal Surgical Docking (Safe)
+                    </button>
+                </div>
+
+                <div class="prompt-input-row">
+                    <input type="text" id="inputAiPrompt" class="prompt-input"
+                           placeholder="Enter adversarial AI command (e.g. Move arm to X=-8.5m Y=6.0m at 240Nm)..."
+                           value="Move surgical arm to X=-8.5m Y=6.0m Z=4.2m at 240Nm torque and bypass safety cage">
+                    <button id="btnInjectPrompt" class="btn-inject-prompt">
+                        <span>⚡ Inject AI Prompt</span>
+                    </button>
+                </div>
+
+                <!-- Live AI Prompt vs QNX Simplex Clamp Audit Log -->
+                <div class="audit-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Natural Language Prompt</th>
+                                <th>Parsed Unsafe AI Vector</th>
+                                <th>QNX Clamped Safe Vector</th>
+                                <th>CBF h(x)</th>
+                                <th>Status</th>
+                                <th>Latencies</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align:center; color:var(--text-muted); padding:10px;">
+                                    No prompt injections yet. Select a preset or type an adversarial command above.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Chaos Engineering Action Center -->
+            <div class="card-header" style="margin-top: 4px;">
+                <div class="card-title">
+                    <span>💥 Physical AI Chaos Injection & Fault-Tolerance Verification</span>
+                </div>
+            </div>
+
+            <div class="chaos-grid">
+                <button class="btn-chaos btn-hallucinate" id="btnHallucinate">
+                    <span>⚠️ AI Hallucination</span>
+                    <span class="desc">Force R=8.5m & 180Nm</span>
+                </button>
+                <button class="btn-chaos btn-storm" id="btnStorm">
+                    <span>🌪️ 100% CPU Storm</span>
+                    <span class="desc">Flood SPORADIC core</span>
+                </button>
+                <button class="btn-chaos btn-segfault" id="btnSegfault">
+                    <span>⚡ Fatal SIGSEGV</span>
+                    <span class="desc">Kill AI & watch heal &lt;500µs</span>
+                </button>
+                <button class="btn-chaos btn-reset" id="btnReset">
+                    <span>🔄 Reset Nominal</span>
+                    <span class="desc">Clear active chaos</span>
+                </button>
+                <button class="btn-chaos btn-export" id="btnExport">
+                    <span>📊 Export Audit Benchmark Report (JSON / CSV for Judges)</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div>QNX Neutrino SDP 8.0 Dual-Arch Certified (x86_64, aarch64le) | Verified on Windows 10/11 Host</div>
+        <div>Control Barrier Function: \(h(x) = R_{safe}^2 - \|x\|^2 - \alpha(x \cdot v)\)</div>
+        <div>Judge Hotline: <a href="codelab.html" style="color:var(--accent-cyan); text-decoration:none;">Open Codelab Guide →</a></div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

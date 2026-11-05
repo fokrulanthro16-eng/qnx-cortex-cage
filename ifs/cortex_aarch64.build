@@ -1,0 +1,55 @@
+# ==============================================================================
+# QNX-CortexCage: Bootable Image File System (IFS) Buildfile for AArch64
+# Target Architecture: aarch64le (ARM64 / Raspberry Pi 5 / QEMU-virt)
+# Target OS: QNX Neutrino RTOS SDP 8.0
+# ==============================================================================
+
+[image=0x40080000]
+[virtual=aarch64le,raw +compress] boot = {
+    # Microkernel Startup for ARM64 QEMU Virt / ARM BSP
+    startup-qemu-virt -v -Dpl011.0x9000000.115200
+    PATH=/proc/boot
+    LD_LIBRARY_PATH=/proc/boot
+    procnto-smp-instr -v
+}
+
+[+script] startup-script = {
+    display_msg "=================================================================="
+    display_msg "  QNX-CORTEXCAGE: Microkernel-Enforced Simplex Cage (AArch64)     "
+    display_msg "  Target: QNX Neutrino RTOS SDP 8.0 ARM64 Autonomous Safety Cage  "
+    display_msg "=================================================================="
+
+    procmgr_symlink /proc/boot/ldqnx-64.so.2 /usr/lib/ldqnx-64.so.2
+
+    # Start ARM PL011 UART driver
+    devc-serpl011 -e -F 0x9000000,33 &
+    reopen /dev/ser1
+
+    display_msg "[CORTEX_INIT] Launching Simplex Safety Resource Manager (/dev/cortex_gate)..."
+    cortex_gate_resmgr &
+
+    display_msg "[CORTEX_INIT] Launching Hard Real-Time 1kHz Safety Loop (Pri 63 SCHED_FIFO)..."
+    safety_actuator_loop &
+
+    display_msg "[CORTEX_INIT] Launching Self-Healing Watchdog Supervisor (Pri 62)..."
+    watchdog_supervisor &
+
+    display_msg "[CORTEX_INIT] Launching Live Telemetry Bridge JSON Streamer..."
+    telemetry_bridge
+}
+
+[type=link] /usr/lib/ldqnx-64.so.2 = /proc/boot/ldqnx-64.so.2
+
+# Core QNX Neutrino 8.0 AArch64 Shared Libraries
+libc.so
+libgcc_s.so.1
+ldqnx-64.so.2
+libsecpol.so.1
+libm.so
+
+# QNX-CortexCage Native Binaries (ARM64)
+cortex_gate_resmgr   = bin/aarch64le/cortex_gate_resmgr
+ai_neural_planner    = bin/aarch64le/ai_neural_planner
+safety_actuator_loop = bin/aarch64le/safety_actuator_loop
+watchdog_supervisor  = bin/aarch64le/watchdog_supervisor
+telemetry_bridge     = bin/aarch64le/telemetry_bridge

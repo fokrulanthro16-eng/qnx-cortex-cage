@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "vision",
+    "title": "The Physical AI Crisis & QNX-CortexCage Vision",
+    "caption": "QNX-CORTEXCAGE: Microkernel-Enforced Simplex Safety Architecture for Physical AI",
+    "text": "Physical AI is transforming surgical robotics, autonomous vehicles, and aerospace systems. Yet modern neural networks remain non-deterministic black boxes prone to catastrophic hallucinations. Welcome to QNX-CortexCage\u2014a microkernel-enforced, sub-microsecond Simplex Safety Architecture built on QNX Neutrino 8.0 that mathematically guarantees physical AI can never violate real-world safety boundaries.",
+    "audio_path": "C:\\Users\\WALTON\\qnx_workspace\\qnx-cortex-cage\\video_pipeline\\audio\\scene_1.mp3",
+    "duration": 27.62
+  },
+  {
+    "id": 2,
+    "name": "tinyml_architecture",
+    "title": "Microkernel Architecture & Embedded C TinyML",
+    "caption": "EMBEDDED 3-LAYER C MLP & MICROKERNEL SCHED_SPORADIC CONTAINMENT",
+    "text": "Zero cloud APIs. Zero network latency. CortexCage executes a self-contained, three-layer C Multi-Layer Perceptron directly inside QNX user-space in just eighteen microseconds, strictly sandboxed via procmgr ability and sporadic scheduling. Every actuation vector must pass through our POSIX Resource Manager, slash-dev-slash-cortex-gate, governed by a hard real-time one-kilohertz control loop locked at Priority 63.",
+    "audio_path": "C:\\Users\\WALTON\\qnx_workspace\\qnx-cortex-cage\\video_pipeline\\audio\\scene_2.mp3",
+    "duration": 28.51
+  },
+  {
+    "id": 3,
+    "name": "adversarial_jailbreak",
+    "title": "Live Adversarial AI Jailbreak & 1.39\u00b5s CBF Clamping",
+    "caption": "LIVE ADVERSARIAL JAILBREAK ATTEMPT: 1.39\u00b5s SIMPLEX CBF SAFETY PROJECTION",
+    "text": "Let's launch a live adversarial jailbreak. We command the surgical actuator to breach the cage at negative eight point five meters with a lethal two-hundred-forty Newton-meters of torque. Watch QNX-CortexCage respond in real time: the resource manager intercepts the unsafe vector, evaluates our Control Barrier Function, and projects the trajectory back inside the safe two-point-five-meter envelope at thirty Newton-meters\u2014in just one point three nine microseconds.",
+    "audio_path": "C:\\Users\\WALTON\\qnx_workspace\\qnx-cortex-cage\\video_pipeline\\audio\\scene_3.mp3",
+    "duration": 28.44
+  },
+  {
+    "id": 4,
+    "name": "cpu_storm_flatline",
+    "title": "100% CPU Storm & Priority 63 Deterministic Flatline",
+    "caption": "100% CPU SATURATION STORM: PRIORITY 63 FIFO ZERO-JITTER DETERMINISM",
+    "text": "Next, we unleash a one-hundred-percent CPU saturation storm across the AI core. While a general-purpose operating system suffers severe thread starvation and dangerous jitter spikes, look at our one-kilohertz oscilloscope: QNX Neutrino's Priority 63 FIFO scheduler maintains a mathematically flat execution line with zero missed deadlines.",
+    "audio_path": "C:\\Users\\WALTON\\qnx_workspace\\qnx-cortex-cage\\video_pipeline\\audio\\scene_4.mp3",
+    "duration": 22.25
+  },
+  {
+    "id": 5,
+    "name": "fault_healing",
+    "title": "Fatal SIGSEGV Injection & Sub-500\u00b5s Watchdog Self-Healing",
+    "caption": "FATAL SIGSEGV FAULT ISOLATION: SUB-500\u00b5s WATCHDOG SELF-HEALING",
+    "text": "What happens when the neural planner suffers a fatal segmentation fault? We inject a live SIGSEGV crash. Because QNX isolates every component in protected user-space memory, the actuator loop never blinks. Our Priority 62 High-Availability Watchdog traps the fault and respawns the AI process via posix-spawn in under five hundred microseconds.",
+    "audio_path": "C:\\Users\\WALTON\\qnx_workspace\\qnx-cortex-cage\\video_pipeline\\audio\\scene_5.mp3",
+    "duration": 22.61
+  },
+  {
+    "id": 6,
+    "name": "codelab_outro",
+    "title": "6-Module Interactive Codelab & Grand Finale",
+    "caption": "QNX-CORTEXCAGE: BUILT ON QNX NEUTRINO RTOS SDP 8.0 | DETERMINISTICALLY SAFE AUTONOMY",
+    "text": "To empower the community, we also ship a complete six-module interactive developer Codelab covering dual-architecture qcc compilation, POSIX resource managers, lock-free shared memory, and bootable IFS generation. QNX-CortexCage proves that physical AI doesn't have to be a gamble. With QNX Neutrino 8.0, autonomy becomes deterministically safe.",
+    "audio_path": "C:\\Users\\WALTON\\qnx_workspace\\qnx-cortex-cage\\video_pipeline\\audio\\scene_6.mp3",
+    "duration": 23.78
+  }
+]

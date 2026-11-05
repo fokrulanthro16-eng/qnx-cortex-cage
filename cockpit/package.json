@@ -1,0 +1,15 @@
+{
+  "name": "qnx-cortex-cage-cockpit",
+  "version": "1.0.0",
+  "description": "Real-Time Aerospace/Robotics Mission Control Cockpit & Interactive Codelab for QNX-CortexCage",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  },
+  "author": "QNX-CortexCage Team",
+  "license": "MIT"
+}

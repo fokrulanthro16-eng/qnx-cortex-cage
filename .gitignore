@@ -1,0 +1,22 @@
+# Node dependencies & logs
+node_modules/
+cockpit/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Video pipeline intermediate / raw captures
+video_pipeline/raw_videos/
+video_pipeline/processed_scenes/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+*~
+
+# Build directories
+build/
+*.o
+*.obj

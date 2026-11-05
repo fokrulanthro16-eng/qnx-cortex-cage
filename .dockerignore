@@ -1,0 +1,7 @@
+.git
+node_modules
+cockpit/node_modules
+video_pipeline/raw_videos
+video_pipeline/processed_scenes
+.DS_Store
+Thumbs.db
