@@ -76,8 +76,14 @@ The compiled binaries in `bin/x86_64/` and `bin/aarch64le/` have been verified w
 - `bin/aarch64le/ELF_VERIFICATION_PROOF.txt`
 
 ### Demonstration Video
-- **Public Video Walkthrough:** `[YOUTUBE_PUBLIC_URL]`
+- **Public Video Walkthrough:** [https://youtu.be/FX6yLcSk84I](https://youtu.be/FX6yLcSk84I)
 - **Local Master Video File:** `QNX_CortexCage_Official_Demo.mp4`
+- **Exact Verified Demonstration Timestamps (2:23 Runtime):**
+  - `00:32` — 18 µs embedded C MLP running in QNX user space sandboxed via `procmgr_ability()` and `SCHED_SPORADIC`, routed through `/dev/cortex_gate`.
+  - `00:52` — Adversarial actuation command (`-8.5 m`, `240 Nm`) intercepted by `/dev/cortex_gate` and clamped to the safe `2.5 m` / `30 Nm` envelope via CBF.
+  - `01:16` — 100% CPU saturation storm while Priority 63 `SCHED_FIFO` loop holds flatline jitter on the 1 kHz oscilloscope.
+  - `01:35` — Live `SIGSEGV` fault injected into the AI planner; QNX isolates the fault and the Priority 62 watchdog respawns it via `posix_spawnp()` in under 500 µs.
+  - `02:01` — Dual-architecture `qcc` build, resource managers, lock-free shared memory, and bootable `.ifs` Codelab walkthrough.
 
 ---
 
